@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}商品列表 - 校园二手交易平台{% endblock %}
+
+{% block content %}
+<h1>商品列表</h1>
+
+<!-- 数据操作 -->
+<div class="grid-2">
+    <div class="card">
+        <h2>添加新商品（插入操作）</h2>
+        <form method="POST" action="{{ url_for('items') }}">
+            <input type="hidden" name="action" value="add">
+            <div class="form-group">
+                <label>商品ID</label>
+                <input type="text" name="item_id" placeholder="例如：i006" required>
+            </div>
+            <div class="form-group">
+                <label>商品名称</label>
+                <input type="text" name="item_name" placeholder="商品名称" required>
+            </div>
+            <div class="form-group">
+                <label>类别</label>
+                <select name="category" required>
+                    <option value="Book">Book</option>
+                    <option value="DailyGoods">DailyGoods</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Furniture">Furniture</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>价格</label>
+                <input type="number" name="price" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>卖家</label>
+                <select name="seller_id" required>
+                    {% for user in users %}
+                    <option value="{{ user.user_id }}">{{ user.user_name }} ({{ user.user_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">添加商品</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>修改商品价格（更新操作）</h2>
+        <form method="POST" action="{{ url_for('items') }}">
+            <input type="hidden" name="action" value="update_price">
+            <div class="form-group">
+                <label>选择商品</label>
+                <select name="item_id" required>
+                    {% for item in items %}
+                    <option value="{{ item.item_id }}">{{ item.item_name }} ({{ item.item_id }}) - 当前¥{{ item.price }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>新价格</label>
+                <input type="number" name="new_price" step="0.01" min="0" required>
+            </div>
+            <button type="submit" class="btn btn-warning">修改价格</button>
+        </form>
+
+        <h2 style="margin-top: 1.5rem;">删除未售出商品（删除操作）</h2>
+        <form method="POST" action="{{ url_for('items') }}">
+            <input type="hidden" name="action" value="delete">
+            <div class="form-group">
+                <label>选择商品</label>
+                <select name="item_id" required>
+                    {% for item in items %}
+                    {% if item.status == 0 %}
+                    <option value="{{ item.item_id }}">{{ item.item_name }} ({{ item.item_id }})</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-danger">删除商品</button>
+        </form>
+    </div>
+</div>
+
+<!-- 所有商品 -->
+<div class="card">
+    <h2>所有商品</h2>
+    <table>
+        <thead>
+            <tr><th>商品ID</th><th>名称</th><th>类别</th><th>价格</th><th>状态</th><th>卖家</th></tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.item_id }}</td>
+                <td>{{ item.item_name }}</td>
+                <td>{{ item.category }}</td>
+                <td>¥{{ item.price }}</td>
+                <td>
+                    {% if item.status == 1 %}
+                        <span class="tag tag-sold">已售出</span>
+                    {% else %}
+                        <span class="tag tag-unsold">未售出</span>
+                    {% endif %}
+                </td>
+                <td>{{ item.seller_name }} ({{ item.seller_id }})</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 基本查询 -->
+<div class="card">
+    <h2>基本查询展示</h2>
+
+    <div class="query-section">
+        <h3>1. 查询所有未售出的商品（WHERE status = 0）</h3>
+        <pre>SELECT * FROM Item WHERE status = 0;</pre>
+        <table>
+            <thead><tr><th>ID</th><th>名称</th><th>类别</th><th>价格</th></tr></thead>
+            <tbody>
+                {% for item in unsold_items %}
+                <tr><td>{{ item.item_id }}</td><td>{{ item.item_name }}</td><td>{{ item.category }}</td><td>¥{{ item.price }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="query-section">
+        <h3>2. 查询价格大于 30 的商品（WHERE price > 30）</h3>
+        <pre>SELECT * FROM Item WHERE price > 30;</pre>
+        <table>
+            <thead><tr><th>ID</th><th>名称</th><th>价格</th></tr></thead>
+            <tbody>
+                {% for item in expensive_items %}
+                <tr><td>{{ item.item_id }}</td><td>{{ item.item_name }}</td><td>¥{{ item.price }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="query-section">
+        <h3>3. 查询"生活用品"类商品（WHERE category = 'DailyGoods'）</h3>
+        <pre>SELECT * FROM Item WHERE category = 'DailyGoods';</pre>
+        <table>
+            <thead><tr><th>ID</th><th>名称</th><th>价格</th></tr></thead>
+            <tbody>
+                {% for item in daily_goods %}
+                <tr><td>{{ item.item_id }}</td><td>{{ item.item_name }}</td><td>¥{{ item.price }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="query-section">
+        <h3>4. 查询 u001 发布的所有商品（WHERE seller_id = 'u001'）</h3>
+        <pre>SELECT * FROM Item WHERE seller_id = 'u001';</pre>
+        <table>
+            <thead><tr><th>ID</th><th>名称</th><th>类别</th><th>价格</th></tr></thead>
+            <tbody>
+                {% for item in u001_items %}
+                <tr><td>{{ item.item_id }}</td><td>{{ item.item_name }}</td><td>{{ item.category }}</td><td>¥{{ item.price }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 连接查询 -->
+<div class="card">
+    <h2>连接查询展示</h2>
+
+    <div class="query-section">
+        <h3>1. 查询所有已售商品及其买家姓名（JOIN）</h3>
+        <pre>SELECT i.item_name, u.user_name as buyer_name
+FROM Item i
+JOIN Orders o ON i.item_id = o.item_id
+JOIN User u ON o.buyer_id = u.user_id;</pre>
+        <table>
+            <thead><tr><th>商品名</th><th>买家姓名</th></tr></thead>
+            <tbody>
+                {% for row in sold_with_buyer %}
+                <tr><td>{{ row.item_name }}</td><td>{{ row.buyer_name }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="query-section">
+        <h3>2. 查询每个订单：商品名 + 买家名 + 日期（多表JOIN）</h3>
+        <pre>SELECT i.item_name, u.user_name as buyer_name, o.order_date
+FROM Orders o
+JOIN Item i ON o.item_id = i.item_id
+JOIN User u ON o.buyer_id = u.user_id;</pre>
+        <table>
+            <thead><tr><th>商品名</th><th>买家名</th><th>日期</th></tr></thead>
+            <tbody>
+                {% for row in order_details %}
+                <tr><td>{{ row.item_name }}</td><td>{{ row.buyer_name }}</td><td>{{ row.order_date }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="query-section">
+        <h3>3. 查询卖家是 u001 的商品是否被购买（LEFT JOIN + CASE）</h3>
+        <pre>SELECT i.item_name,
+       CASE WHEN o.order_id IS NOT NULL THEN '已购买' ELSE '未售出' END as status
+FROM Item i
+LEFT JOIN Orders o ON i.item_id = o.item_id
+WHERE i.seller_id = 'u001';</pre>
+        <table>
+            <thead><tr><th>商品名</th><th>购买状态</th></tr></thead>
+            <tbody>
+                {% for row in u001_sold_check %}
+                <tr><td>{{ row.item_name }}</td><td>{{ row.status }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 聚合与分组 -->
+<div class="card">
+    <h2>聚合与分组展示</h2>
+
+    <div class="query-section">
+        <h3>1. 统计商品总数（COUNT）</h3>
+        <pre>SELECT COUNT(*) FROM Item;</pre>
+        <p>结果：<strong>{{ total_items.count }}</strong> 件</p>
+    </div>
+
+    <div class="query-section">
+        <h3>2. 统计每类商品数量（GROUP BY）</h3>
+        <pre>SELECT category, COUNT(*) FROM Item GROUP BY category;</pre>
+        <table>
+            <thead><tr><th>类别</th><th>数量</th></tr></thead>
+            <tbody>
+                {% for row in category_counts %}
+                <tr><td>{{ row.category }}</td><td>{{ row.count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="query-section">
+        <h3>3. 计算所有商品平均价格（AVG）</h3>
+        <pre>SELECT AVG(price) FROM Item;</pre>
+        <p>结果：<strong>¥{{ "%.2f"|format(avg_price.avg_price) }}</strong></p>
+    </div>
+</div>
+{% endblock %}

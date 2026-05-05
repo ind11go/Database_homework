@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}校园二手交易平台{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">首页</a></li>
+            <li><a href="{{ url_for('users') }}" class="{% if request.endpoint == 'users' %}active{% endif %}">用户列表</a></li>
+            <li><a href="{{ url_for('items') }}" class="{% if request.endpoint == 'items' %}active{% endif %}">商品列表</a></li>
+            <li><a href="{{ url_for('orders') }}" class="{% if request.endpoint == 'orders' %}active{% endif %}">订单列表</a></li>
+            <li><a href="{{ url_for('queries') }}" class="{% if request.endpoint == 'queries' %}active{% endif %}">查询演示</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

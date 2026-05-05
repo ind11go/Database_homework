@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}订单列表 - 校园二手交易平台{% endblock %}
+
+{% block content %}
+<h1>订单列表</h1>
+
+<div class="card">
+    <h2>购买商品（业务逻辑实现 - 事务）</h2>
+    <form method="POST" action="{{ url_for('orders') }}">
+        <input type="hidden" name="action" value="buy">
+        <div class="form-group">
+            <label>订单ID</label>
+            <input type="text" name="order_id" placeholder="例如：o003" required>
+        </div>
+        <div class="form-group">
+            <label>选择商品（仅显示未售出）</label>
+            <select name="item_id" required>
+                {% for item in available_items %}
+                <option value="{{ item.item_id }}">{{ item.item_name }} ({{ item.item_id }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>买家</label>
+            <select name="buyer_id" required>
+                {% for user in users %}
+                <option value="{{ user.user_id }}">{{ user.user_name }} ({{ user.user_id }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>订单日期</label>
+            <input type="date" name="order_date" required>
+        </div>
+        <button type="submit" class="btn btn-success">确认购买</button>
+    </form>
+    <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+        说明：购买操作使用数据库事务保证原子性，同时更新 Item 表 status=1 并插入 Orders 记录。
+        若商品已售出，则购买失败并回滚。
+    </p>
+</div>
+
+<div class="card">
+    <h2>所有订单</h2>
+    <table>
+        <thead>
+            <tr><th>订单ID</th><th>商品</th><th>买家</th><th>日期</th></tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.order_id }}</td>
+                <td>{{ order.item_name }} ({{ order.item_id }})</td>
+                <td>{{ order.buyer_name }} ({{ order.buyer_id }})</td>
+                <td>{{ order.order_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

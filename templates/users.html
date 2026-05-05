@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}用户列表 - 校园二手交易平台{% endblock %}
+
+{% block content %}
+<h1>用户列表</h1>
+
+<div class="card">
+    <h2>所有用户</h2>
+    <table>
+        <thead>
+            <tr><th>用户ID</th><th>用户名</th><th>手机号</th></tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.user_id }}</td>
+                <td>{{ user.user_name }}</td>
+                <td>{{ user.phone }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2>每个用户发布的商品数量（聚合查询 - GROUP BY）</h2>
+    <table>
+        <thead>
+            <tr><th>用户ID</th><th>用户名</th><th>发布商品数</th></tr>
+        </thead>
+        <tbody>
+            {% for u in user_item_counts %}
+            <tr>
+                <td>{{ u.user_id }}</td>
+                <td>{{ u.user_name }}</td>
+                <td>{{ u.item_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2>发布商品数量最多的用户（聚合查询 + ORDER BY + LIMIT）</h2>
+    {% if top_seller %}
+    <p>
+        <strong>{{ top_seller.user_name }}</strong>（{{ top_seller.user_id }}）
+        共发布了 <strong>{{ top_seller.item_count }}</strong> 件商品
+    </p>
+    <pre>SELECT u.user_id, u.user_name, COUNT(i.item_id) as item_count
+FROM User u
+JOIN Item i ON u.user_id = i.seller_id
+GROUP BY u.user_id
+ORDER BY item_count DESC
+LIMIT 1;</pre>
+    {% else %}
+    <p>暂无数据</p>
+    {% endif %}
+</div>
+{% endblock %}

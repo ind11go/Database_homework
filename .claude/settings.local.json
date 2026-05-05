@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 *)",
+      "Bash(pip install *)",
+      "Bash(pip3 install *)",
+      "Bash(apt-get update *)",
+      "Bash(apt-get install *)",
+      "Bash(sudo apt-get *)",
+      "Read(//tmp/**)",
+      "Bash(apt-get download *)",
+      "Bash(dpkg-deb -x poppler-utils*.deb poppler-extract)",
+      "Bash(/tmp/poppler-extract/usr/bin/pdftotext /mnt/c/Users/indigo/Desktop/database_homework/26数据库大作业.pdf /tmp/pdf_content.txt)",
+      "Bash(dpkg-deb -x libpoppler118*.deb libpoppler-extract)",
+      "Bash(LD_LIBRARY_PATH=/tmp/libpoppler-extract/usr/lib/x86_64-linux-gnu /tmp/poppler-extract/usr/bin/pdftotext /mnt/c/Users/indigo/Desktop/database_homework/26数据库大作业.pdf /tmp/pdf_content.txt)",
+      "Bash(LD_LIBRARY_PATH=/tmp/libpoppler-extract/usr/lib/x86_64-linux-gnu /tmp/poppler-extract/usr/bin/pdfinfo *)",
+      "Bash(LD_LIBRARY_PATH=/tmp/libpoppler-extract/usr/lib/x86_64-linux-gnu /tmp/poppler-extract/usr/bin/pdftoppm *)",
+      "Bash(git --version)",
+      "Bash(sqlite3 --version)",
+      "Bash(pip3 --version)",
+      "Bash(curl -s http://127.0.0.1:5000/)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
