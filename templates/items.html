@@ -109,144 +109,231 @@
     </table>
 </div>
 
-<!-- 基本查询 -->
+<!-- 基本查询（交互式） -->
 <div class="card">
-    <h2>基本查询展示</h2>
+    <h2>基本查询（交互式）</h2>
 
     <div class="query-section">
-        <h3>1. 查询所有未售出的商品（WHERE status = 0）</h3>
-        <pre>SELECT * FROM Item WHERE status = 0;</pre>
-        <table>
-            <thead><tr><th>ID</th><th>名称</th><th>类别</th><th>价格</th></tr></thead>
-            <tbody>
-                {% for item in unsold_items %}
-                <tr><td>{{ item.item_id }}</td><td>{{ item.item_name }}</td><td>{{ item.category }}</td><td>¥{{ item.price }}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>1. 按商品状态查询</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
+            <input type="hidden" name="bq_type" value="status">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>选择状态</label>
+                <select name="status_val">
+                    <option value="0">未售出 (status = 0)</option>
+                    <option value="1">已售出 (status = 1)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
     </div>
 
     <div class="query-section">
-        <h3>2. 查询价格大于 30 的商品（WHERE price > 30）</h3>
-        <pre>SELECT * FROM Item WHERE price > 30;</pre>
-        <table>
-            <thead><tr><th>ID</th><th>名称</th><th>价格</th></tr></thead>
-            <tbody>
-                {% for item in expensive_items %}
-                <tr><td>{{ item.item_id }}</td><td>{{ item.item_name }}</td><td>¥{{ item.price }}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>2. 按价格区间查询</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
+            <input type="hidden" name="bq_type" value="price">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>价格大于</label>
+                <input type="number" name="price_val" value="30" step="0.01" min="0" style="width: 120px;">
+            </div>
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
     </div>
 
     <div class="query-section">
-        <h3>3. 查询"生活用品"类商品（WHERE category = 'DailyGoods'）</h3>
-        <pre>SELECT * FROM Item WHERE category = 'DailyGoods';</pre>
-        <table>
-            <thead><tr><th>ID</th><th>名称</th><th>价格</th></tr></thead>
-            <tbody>
-                {% for item in daily_goods %}
-                <tr><td>{{ item.item_id }}</td><td>{{ item.item_name }}</td><td>¥{{ item.price }}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>3. 按类别查询</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
+            <input type="hidden" name="bq_type" value="category">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>选择类别</label>
+                <select name="cat_val">
+                    {% for cat in categories %}
+                    <option value="{{ cat.category }}">{{ cat.category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
     </div>
 
     <div class="query-section">
-        <h3>4. 查询 u001 发布的所有商品（WHERE seller_id = 'u001'）</h3>
-        <pre>SELECT * FROM Item WHERE seller_id = 'u001';</pre>
+        <h3>4. 按卖家查询</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
+            <input type="hidden" name="bq_type" value="seller">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>选择卖家</label>
+                <select name="seller_val">
+                    {% for user in users %}
+                    <option value="{{ user.user_id }}" {% if user.user_id == 'u001' %}selected{% endif %}>{{ user.user_name }} ({{ user.user_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
+    </div>
+
+    {% if basic_query_result is not none %}
+    <div class="card" style="margin-top: 1rem; background: #e8f4fd; border-left: 4px solid #2196f3;">
+        <h3>查询结果：{{ basic_query_title }}</h3>
+        <pre>{{ basic_query_sql }}</pre>
+        {% if basic_query_result %}
         <table>
-            <thead><tr><th>ID</th><th>名称</th><th>类别</th><th>价格</th></tr></thead>
+            <thead>
+                <tr><th>商品ID</th><th>名称</th><th>类别</th><th>价格</th><th>状态</th><th>卖家</th></tr>
+            </thead>
             <tbody>
-                {% for item in u001_items %}
-                <tr><td>{{ item.item_id }}</td><td>{{ item.item_name }}</td><td>{{ item.category }}</td><td>¥{{ item.price }}</td></tr>
+                {% for item in basic_query_result %}
+                <tr>
+                    <td>{{ item.item_id }}</td>
+                    <td>{{ item.item_name }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>¥{{ item.price }}</td>
+                    <td>
+                        {% if item.status == 1 %}<span class="tag tag-sold">已售出</span>{% else %}<span class="tag tag-unsold">未售出</span>{% endif %}
+                    </td>
+                    <td>{{ item.seller_id }}</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <p>暂无符合条件的结果。</p>
+        {% endif %}
     </div>
+    {% endif %}
 </div>
 
-<!-- 连接查询 -->
+<!-- 连接查询（交互式） -->
 <div class="card">
-    <h2>连接查询展示</h2>
+    <h2>连接查询（交互式）</h2>
 
     <div class="query-section">
-        <h3>1. 查询所有已售商品及其买家姓名（JOIN）</h3>
-        <pre>SELECT i.item_name, u.user_name as buyer_name
-FROM Item i
-JOIN Orders o ON i.item_id = o.item_id
-JOIN User u ON o.buyer_id = u.user_id;</pre>
-        <table>
-            <thead><tr><th>商品名</th><th>买家姓名</th></tr></thead>
-            <tbody>
-                {% for row in sold_with_buyer %}
-                <tr><td>{{ row.item_name }}</td><td>{{ row.buyer_name }}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>1. 查询所有已售商品及其买家姓名</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <input type="hidden" name="jq_type" value="sold_buyer">
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
     </div>
 
     <div class="query-section">
-        <h3>2. 查询每个订单：商品名 + 买家名 + 日期（多表JOIN）</h3>
-        <pre>SELECT i.item_name, u.user_name as buyer_name, o.order_date
-FROM Orders o
-JOIN Item i ON o.item_id = i.item_id
-JOIN User u ON o.buyer_id = u.user_id;</pre>
-        <table>
-            <thead><tr><th>商品名</th><th>买家名</th><th>日期</th></tr></thead>
-            <tbody>
-                {% for row in order_details %}
-                <tr><td>{{ row.item_name }}</td><td>{{ row.buyer_name }}</td><td>{{ row.order_date }}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>2. 查询每个订单详情（商品名 + 买家名 + 日期）</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <input type="hidden" name="jq_type" value="order_detail">
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
     </div>
 
     <div class="query-section">
-        <h3>3. 查询卖家是 u001 的商品是否被购买（LEFT JOIN + CASE）</h3>
-        <pre>SELECT i.item_name,
-       CASE WHEN o.order_id IS NOT NULL THEN '已购买' ELSE '未售出' END as status
-FROM Item i
-LEFT JOIN Orders o ON i.item_id = o.item_id
-WHERE i.seller_id = 'u001';</pre>
+        <h3>3. 查询指定卖家的商品是否被购买</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
+            <input type="hidden" name="jq_type" value="seller_sold">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>选择卖家</label>
+                <select name="seller_check">
+                    {% for user in users %}
+                    <option value="{{ user.user_id }}" {% if user.user_id == 'u001' %}selected{% endif %}>{{ user.user_name }} ({{ user.user_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
+    </div>
+
+    {% if join_query_result is not none %}
+    <div class="card" style="margin-top: 1rem; background: #e8f4fd; border-left: 4px solid #2196f3;">
+        <h3>查询结果：{{ join_query_title }}</h3>
+        <pre>{{ join_query_sql }}</pre>
+        {% if join_query_result %}
         <table>
-            <thead><tr><th>商品名</th><th>购买状态</th></tr></thead>
+            <thead>
+                <tr>
+                    {% if jq_type == 'sold_buyer' %}<th>商品名</th><th>买家姓名</th>{% endif %}
+                    {% if jq_type == 'order_detail' %}<th>商品名</th><th>买家名</th><th>日期</th>{% endif %}
+                    {% if jq_type == 'seller_sold' %}<th>商品名</th><th>购买状态</th>{% endif %}
+                </tr>
+            </thead>
             <tbody>
-                {% for row in u001_sold_check %}
-                <tr><td>{{ row.item_name }}</td><td>{{ row.status }}</td></tr>
+                {% for row in join_query_result %}
+                <tr>
+                    {% if jq_type == 'sold_buyer' %}
+                    <td>{{ row.item_name }}</td><td>{{ row.buyer_name }}</td>
+                    {% endif %}
+                    {% if jq_type == 'order_detail' %}
+                    <td>{{ row.item_name }}</td><td>{{ row.buyer_name }}</td><td>{{ row.order_date }}</td>
+                    {% endif %}
+                    {% if jq_type == 'seller_sold' %}
+                    <td>{{ row.item_name }}</td><td>{{ row.status }}</td>
+                    {% endif %}
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <p>暂无符合条件的结果。</p>
+        {% endif %}
     </div>
+    {% endif %}
 </div>
 
-<!-- 聚合与分组 -->
+<!-- 聚合与分组（交互式） -->
 <div class="card">
-    <h2>聚合与分组展示</h2>
+    <h2>聚合与分组（交互式）</h2>
 
     <div class="query-section">
-        <h3>1. 统计商品总数（COUNT）</h3>
-        <pre>SELECT COUNT(*) FROM Item;</pre>
-        <p>结果：<strong>{{ total_items.count }}</strong> 件</p>
+        <h3>1. 统计商品总数</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <input type="hidden" name="aq_type" value="total">
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
     </div>
 
     <div class="query-section">
-        <h3>2. 统计每类商品数量（GROUP BY）</h3>
-        <pre>SELECT category, COUNT(*) FROM Item GROUP BY category;</pre>
+        <h3>2. 统计每类商品数量</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <input type="hidden" name="aq_type" value="category">
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
+    </div>
+
+    <div class="query-section">
+        <h3>3. 计算所有商品平均价格</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <input type="hidden" name="aq_type" value="avg">
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
+    </div>
+
+    <div class="query-section">
+        <h3>4. 查询发布商品数量最多的用户</h3>
+        <form method="GET" action="{{ url_for('items') }}" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <input type="hidden" name="aq_type" value="top">
+            <button type="submit" class="btn btn-primary">执行查询</button>
+        </form>
+    </div>
+
+    {% if agg_query_result is not none %}
+    <div class="card" style="margin-top: 1rem; background: #e8f4fd; border-left: 4px solid #2196f3;">
+        <h3>查询结果：{{ agg_query_title }}</h3>
+        <pre>{{ agg_query_sql }}</pre>
+        {% if aq_type == 'total' %}
+        <p>结果：<strong>{{ agg_query_result.count }}</strong> 件</p>
+        {% elif aq_type == 'avg' %}
+        <p>结果：<strong>¥{{ "%.2f"|format(agg_query_result.avg_price) }}</strong></p>
+        {% elif aq_type == 'top' and agg_query_result %}
+        <p><strong>{{ agg_query_result.user_name }}</strong>（{{ agg_query_result.user_id }}）共发布了 <strong>{{ agg_query_result.item_count }}</strong> 件商品</p>
+        {% elif aq_type == 'category' %}
         <table>
             <thead><tr><th>类别</th><th>数量</th></tr></thead>
             <tbody>
-                {% for row in category_counts %}
+                {% for row in agg_query_result %}
                 <tr><td>{{ row.category }}</td><td>{{ row.count }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <p>暂无结果。</p>
+        {% endif %}
     </div>
-
-    <div class="query-section">
-        <h3>3. 计算所有商品平均价格（AVG）</h3>
-        <pre>SELECT AVG(price) FROM Item;</pre>
-        <p>结果：<strong>¥{{ "%.2f"|format(avg_price.avg_price) }}</strong></p>
-    </div>
+    {% endif %}
 </div>
 {% endblock %}
