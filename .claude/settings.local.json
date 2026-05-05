@@ -30,7 +30,10 @@
       "Bash(curl -s https://database-homework.onrender.com/users)",
       "Bash(curl -s https://database-homework.onrender.com/items)",
       "Bash(curl -s https://database-homework.onrender.com/orders)",
-      "Bash(curl -s https://database-homework.onrender.com/queries)"
+      "Bash(curl -s https://database-homework.onrender.com/queries)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(curl -s \"https://database-homework.onrender.com/items\")"
     ]
   }
 }
