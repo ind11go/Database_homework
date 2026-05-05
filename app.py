@@ -1,9 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from database import get_connection, init_database
 import sqlite3
+import os
 
 app = Flask(__name__)
 app.secret_key = 'campus-trade-secret-key'
+
+
+# 应用启动时自动初始化数据库（确保部署环境也有数据）
+with app.app_context():
+    if not os.path.exists('campus_trade.db'):
+        init_database()
 
 
 @app.before_request
