@@ -267,9 +267,11 @@ LIMIT 1;'''
                           join_query_result=join_query_result,
                           join_query_sql=join_query_sql,
                           join_query_title=join_query_title,
+                          jq_type=jq_type,
                           agg_query_result=agg_query_result,
                           agg_query_sql=agg_query_sql,
-                          agg_query_title=agg_query_title)
+                          agg_query_title=agg_query_title,
+                          aq_type=aq_type)
 
 
 @app.route('/orders', methods=['GET', 'POST'])
